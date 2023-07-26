@@ -5,6 +5,7 @@ import {
 
 // graphQl SDL (schema definition language)
 // Query って言うタイプを書くべき
+//Mutationは、データを修正；削除’生成をするために使う
 const typeDefs = gql `
   type User {
     id: ID
@@ -18,6 +19,9 @@ const typeDefs = gql `
   type Query { 
     allTweets: [Tweet]
     tweet(id: ID): Tweet
+  }
+  type Mutation {
+    postTweet(text: String, userId: ID): Tweet
   }
 `
 
