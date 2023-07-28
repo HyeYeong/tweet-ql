@@ -3,12 +3,22 @@ import {
   gql
 } from "apollo-server"
 
-const tweets = [{
+let tweets = [{
   id: "1",
   text: "first",
 }, {
   id: "2",
   text: "second",
+}]
+
+let users = [{
+  id: "1",
+  firstName: "lee",
+  lastName: "hy"
+}, {
+  id: "2",
+  firstName: "kim",
+  lastName: "taetae"
 }]
 
 // graphQl SDL (schema definition language)
@@ -17,25 +27,31 @@ const tweets = [{
 const typeDefs = gql `
   type User {
     id: ID!
-    username: String !
+    firstName: String!
+    lastName: String!
+    fullName: String!
   }
   type Tweet {
     id: ID
     text: String!
     author: User
   }
-  type Query { 
+  type Query {
+    allUsers: [User!]!
     allTweets: [Tweet]
     tweet(id: ID!): Tweet
   }
   type Mutation {
-    postTweet(text: String, userId: ID!): Tweet!
+    postTweet(text: String!, userId: ID!): Tweet!
     deleteTweet(id: ID!): Boolean!
   }
 `
 
 const resolvers = {
   Query: {
+    allUsers() {
+      return users
+    },
     allTweets() {
       return tweets
     },
@@ -44,6 +60,38 @@ const resolvers = {
     }) {
       return tweets.find((tweet) => tweet.id === id)
     },
+  },
+  Mutation: {
+    postTweet(_, {
+      text,
+      userId
+    }) {
+      const newTweet = {
+        id: tweets.length + 1,
+        text
+      }
+      tweets.push(newTweet)
+      return newTweet
+    },
+    deleteTweet(_, {
+      id
+    }) {
+      const tweet = tweets.find(tweet => tweet.id === id)
+      if (!tweet) return false
+      tweets = tweets.filter(item => item.id !== id)
+      return true
+    }
+  },
+  User: {
+    fullName(root) {
+      const {
+        firstName,
+        lastName
+      } = root
+      console.log("fullname called", root)
+      //　ここで言うRootは、このFieldを読んでいるObjectを意味する
+      return `${firstName} ${lastName}`
+    }
   }
 }
 
