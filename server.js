@@ -6,9 +6,11 @@ import {
 let tweets = [{
   id: "1",
   text: "first",
+  userId: "2"
 }, {
   id: "2",
   text: "second",
+  userId: "1"
 }]
 
 let users = [{
@@ -29,11 +31,18 @@ const typeDefs = gql `
     id: ID!
     firstName: String!
     lastName: String!
+    """
+    is sum firstName + lastName as a string
+    """
     fullName: String!
   }
+  """
+  Tweet obj represents a resource for A Tweet ->주석 달기
+  """
   type Tweet {
     id: ID
     text: String!
+    userId: String!
     author: User
   }
   type Query {
@@ -68,8 +77,10 @@ const resolvers = {
     }) {
       const newTweet = {
         id: tweets.length + 1,
-        text
+        text,
+        userId
       }
+      if (!userId) return console.error("유저 ID가 존재하지 않습니다.")
       tweets.push(newTweet)
       return newTweet
     },
@@ -83,14 +94,20 @@ const resolvers = {
     }
   },
   User: {
-    fullName(root) {
-      const {
-        firstName,
-        lastName
-      } = root
-      console.log("fullname called", root)
+    fullName({
+      firstName,
+      lastName
+    }) {
       //　ここで言うRootは、このFieldを読んでいるObjectを意味する
       return `${firstName} ${lastName}`
+    }
+  },
+  Tweet: {
+    author({
+      userId
+    }) {
+      if (!userId) return console.error("유저 ID가 존재하지 않습니다.")
+      return users.find(user => user.id === userId)
     }
   }
 }
